@@ -57,9 +57,18 @@ def main():
     last_ts = get_last_timestamp()
     cases = fetch_cases(last_ts)
     if not cases:
-        send_whatsapp("No new litigation updates this hour.")
+        send_whatsapp("🕒 No new Supreme Court / High Court / ITAT / GST updates this hour.")
         return
-    message = "*Hourly Litigation Tracker Update*\n\n"
+    message = "*🧾 Hourly Litigation Tracker*\n\n"
+
+    newest_ts = last_ts
+
+for idx, (ts, title, link) in enumerate(cases, 1):
+    message += f"*{idx}. {title}*\n"
+    message += f"{link}\n\n"
+
+    if ts > newest_ts:
+        newest_ts = ts
     newest_ts = last_ts
     for idx, (ts, title, link) in enumerate(cases, 1):
         message += f"{idx}. {title}\n{link}\n\n"
