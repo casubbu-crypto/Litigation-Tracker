@@ -57,6 +57,7 @@ def main():
     last_ts = get_last_timestamp()
     cases = fetch_cases(last_ts)
     if not cases:
+        send_whatsapp("No new litigation updates this hour.")
         return
     message = "*Hourly Litigation Tracker Update*\n\n"
     newest_ts = last_ts
