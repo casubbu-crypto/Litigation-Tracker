@@ -45,7 +45,8 @@ def send_whatsapp(message):
         "type": "text",
         "text": {"body": message}
     }
-    requests.post(url, headers=headers, json=payload)
+        response = requests.post(url, headers=headers, json=payload)
+    print("WhatsApp Response:", response.text)
 
 def main():
     last_ts = get_last_timestamp()
