@@ -1,8 +1,8 @@
 import requests
 import feedparser
 import time
-
 import os
+from datetime import datetime
 
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 TOKEN = os.getenv("WHATSAPP_TOKEN")
@@ -15,8 +15,11 @@ RSS_FEEDS = [
 ]
 
 def get_last_timestamp():
-    with open("last_sent.txt", "r") as f:
-        return float(f.read().strip())
+    try:
+        with open("last_sent.txt", "r") as f:
+            return float(f.read().strip())
+    except:
+        return 0.0
 
 def update_timestamp(ts):
     with open("last_sent.txt", "w") as f:
@@ -27,9 +30,14 @@ def fetch_cases(last_ts):
     for url in RSS_FEEDS:
         feed = feedparser.parse(url)
         for entry in feed.entries:
-            published = time.mktime(entry.published_parsed) if hasattr(entry, "published_parsed") else 0
+            if hasattr(entry, "published_parsed") and entry.published_parsed:
+                published = time.mktime(entry.published_parsed)
+            else:
+                published = 0
+
             if published > last_ts:
                 new_items.append((published, entry.title, entry.link))
+
     new_items.sort(reverse=True)
     return new_items[:5]
 
@@ -45,35 +53,29 @@ def send_whatsapp(message):
         "type": "text",
         "text": {"body": message}
     }
-    print("SENDING TO:", RECIPIENT)
-    print("PHONE ID:", PHONE_NUMBER_ID) 
-    
+
     response = requests.post(url, headers=headers, json=payload)
-    
-    print(response.status_code)
-    print(response.text)
+    print("STATUS:", response.status_code)
+    print("RESPONSE:", response.text)
 
 def main():
     last_ts = get_last_timestamp()
     cases = fetch_cases(last_ts)
+
+    current_time = datetime.now().strftime("%d-%m-%Y %H:%M IST")
+
     if not cases:
-        send_whatsapp("🕒 No new Supreme Court / High Court / ITAT / GST updates this hour.")
+        send_whatsapp(f"🕒 No new Supreme Court / High Court / ITAT / GST updates.\nChecked at: {current_time}")
         return
-    message = "*🧾 Hourly Litigation Tracker*\n\n"
 
+    message = f"*🧾 Hourly Litigation Tracker*\nUpdated: {current_time}\n\n"
     newest_ts = last_ts
 
-for idx, (ts, title, link) in enumerate(cases, 1):
-    message += f"*{idx}. {title}*\n"
-    message += f"{link}\n\n"
-
-    if ts > newest_ts:
-        newest_ts = ts
-    newest_ts = last_ts
     for idx, (ts, title, link) in enumerate(cases, 1):
-        message += f"{idx}. {title}\n{link}\n\n"
+        message += f"*{idx}. {title}*\n{link}\n\n"
         if ts > newest_ts:
             newest_ts = ts
+
     send_whatsapp(message)
     update_timestamp(newest_ts)
 
