@@ -1,4 +1,4 @@
-name: Daily Litigation Tracker
+name: Hourly Litigation Tracker
 
 on:
   schedule:
@@ -6,12 +6,34 @@ on:
   workflow_dispatch:
 
 jobs:
-  send_message:
+  send_update:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Send WhatsApp Message
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
         run: |
-          curl -X POST "https://graph.facebook.com/v22.0/${{ secrets.PHONE_NUMBER_ID }}/messages" \
-          -H "Authorization: Bearer ${{ secrets.WHATSAPP_TOKEN }}" \
-          -H "Content-Type: application/json" \
-          -d "{\"messaging_product\":\"whatsapp\",\"to\":\"${{ secrets.RECIPIENT_NUMBER }}\",\"type\":\"text\",\"text\":{\"body\":\"Daily Litigation Tracker Test Message\"}}"
+          pip install requests feedparser
+
+      - name: Run Tracker Script
+        env:
+          PHONE_NUMBER_ID: ${{ secrets.PHONE_NUMBER_ID }}
+          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+          RECIPIENT_NUMBER: ${{ secrets.RECIPIENT_NUMBER }}
+        run: |
+          python tracker.py
+
+      - name: Commit Updated Timestamp
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add last_sent.txt
+          git commit -m "Update last_sent timestamp" || echo "No changes"
+          git push
