@@ -2,7 +2,7 @@ name: Daily Litigation Tracker
 
 on:
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '0 * * * *'
   workflow_dispatch:
 
 jobs:
