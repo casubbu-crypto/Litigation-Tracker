@@ -45,7 +45,11 @@ def send_whatsapp(message):
         "type": "text",
         "text": {"body": message}
     }
+    print("SENDING TO:", RECIPIENT)
+    print("PHONE ID:", PHONE_NUMBER_ID) 
+    
     response = requests.post(url, headers=headers, json=payload)
+    
     print(response.status_code)
     print(response.text)
 
