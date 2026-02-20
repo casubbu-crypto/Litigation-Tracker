@@ -2,9 +2,11 @@ import requests
 import feedparser
 import time
 
-PHONE_NUMBER_ID = "${{ secrets.PHONE_NUMBER_ID }}"
-TOKEN = "${{ secrets.WHATSAPP_TOKEN }}"
-RECIPIENT = "${{ secrets.RECIPIENT_NUMBER }}"
+import os
+
+PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
+TOKEN = os.getenv("WHATSAPP_TOKEN")
+RECIPIENT = os.getenv("RECIPIENT_NUMBER")
 
 RSS_FEEDS = [
     "https://www.livelaw.in/rss/top-stories.xml",
